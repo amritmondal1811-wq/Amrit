@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quesly — Live Quiz App</title>
+<style>
+  :root{
+    --bg:#f7fbff; --card:#ffffff; --accent:#0b78ff; --muted:#67748a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter, "Poppins", system-ui, Arial; background:var(--bg); color:#0b2338;
+    display:flex; justify-content:center; align-items:center; min-height:100vh;
+  }
+  .app{
+    width:100%; max-width:780px; margin:20px; border-radius:12px; box-shadow:0 10px 30px rgba(10,20,40,0.08);
+    overflow:hidden; background:linear-gradient(180deg,#ffffff,#f1f7ff);
+  }
+  header{display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #e6eefb;}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#ffd86b,#f76b1c);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+  h1{font-size:20px;margin:0}
+  main{padding:18px}
+  .card{background:var(--card); border-radius:10px; padding:18px; box-shadow: 0 6px 18px rgba(12,40,80,0.03);}
+  label{display:block;margin:10px 0 6px;font-weight:600;color:var(--muted);}
+  input[type="text"], input[type="number"], select{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e2eefc; font-size:15px;
+    background:#fbfdff;
+  }
+  .row{display:flex; gap:12px;}
+  .row > *{flex:1}
+  .btn{display:inline-block;padding:10px 14px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--accent);border:2px solid #e6eefb}
+  .hidden{display:none}
+  .center{ text-align:center }
+  /* Rules */
+  .rules-list{padding-left:18px; color:#27485c}
+  /* Quiz */
+  #questionText{font-size:18px;margin:12px 0 8px}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  .optBtn{background:#f4f8ff;border:1px solid #e6eefb;padding:10px;border-radius:8px;cursor:pointer;text-align:left}
+  .optBtn.correct{background:#e6ffef;border-color:#2dbd74}
+  .optBtn.wrong{background:#ffecec;border-color:#ff6b6b}
+  .timerBar{height:8px;background:#e6eefb;border-radius:8px;overflow:hidden;margin-top:12px}
+  .timerFill{height:100%;background:linear-gradient(90deg,#ffd86b,#f76b1c);width:0%}
+  /* Result */
+  .scoreBig{font-size:28px;font-weight:800;color:#0b78ff}
+  .mistakesList{list-style:disc;margin-left:18px;color:#27485c}
+  /* footer small */
+  footer{padding:12px 18px;border-top:1px solid #eef6ff;text-align:center;color:var(--muted)}
+  /* responsive */
+  @media(max-width:520px){
+    .options{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="app" role="application" aria-labelledby="appTitle">
+  <header>
+    <div class="brand">
+      <div class="logo">Q</div>
+      <div>
+        <h1 id="appTitle">Quesly — Live Quiz</h1>
+        <div style="font-size:12px;color:var(--muted)">Smart, subject-wise live questions</div>
+      </div>
+    </div>
+    <div>
+      <button id="musicToggle" class="btn ghost" title="Mute / Unmute music">Mute</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ========== Welcome / Input Page ========== -->
+    <section id="welcomePage" class="card" aria-hidden="false">
+      <div class="center"><strong style="font-size:18px">Welcome</strong></div>
+      <p style="color:var(--muted)">Fill student details and choose subject + difficulty</p>
+
+      <label for="nameInput">Name</label>
+      <input id="nameInput" type="text" placeholder="Student name" autocomplete="off"/>
+
+      <div class="row">
+        <div>
+          <label for="ageInput">Age</label>
+          <input id="ageInput" type="number" placeholder="Age" min="4" max="20"/>
+        </div>
+        <div>
+          <label for="classInput">Class</label>
+          <select id="classInput">
+            <option value="">Select class</option>
+            <option value="1">Class 1</option>
+            <option value="2">Class 2</option>
+            <option value="3">Class 3</option>
+            <option value="4">Class 4</option>
+            <option value="5">Class 5</option>
+            <option value="6">Class 6</option>
+            <option value="7">Class 7</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="subjectInput">Subject</label>
+      <select id="subjectInput">
+        <option value="">Select subject</option>
+        <option value="9">General Knowledge</option>
+        <option value="17">Science</option>
+        <option value="19">Mathematics</option>
+        <option value="23">History</option>
+        <option value="21">Sports</option>
+      </select>
+
+      <label for="difficultyInput">Difficulty</label>
+      <select id="difficultyInput">
+        <option value="">Select difficulty</option>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button id="toRulesBtn" class="btn">Next: Rules</button>
+        <button id="installBtn" class="btn ghost" style="margin-left:auto">Install (Add to Home)</button>
+      </div>
+    </section>
+
+    <!-- ========== Rules Page ========== -->
+    <section id="rulesPage" class="card hidden" aria-hidden="true">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong style="font-size:18px">Quiz Rules</strong>
+      </div>
+      <ol class="rules-list">
+        <li>Total <strong>20</strong> questions will be asked.</li>
+        <li>Each question has <strong>30 seconds</strong>.</li>
+        <li>Total quiz time: <strong>10 minutes</strong> (auto by 20×30s).</li>
+        <li>Each correct answer = <strong>+5 points</strong>.</li>
+        <li>No negative marking. Answer once and move on.</li>
+      </ol>
+      <p style="margin-top:8px;color:var(--muted)"><em>Student:</em> <strong id="ruleStudentName">—</strong></p>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button id="startNowBtn" class="btn">Let’s Start the Quiz</button>
+        <button id="backToWelcome" class="btn ghost">Back</button>
+      </div>
+    </section>
+
+    <!-- ========== Quiz Page ========== -->
+    <section id="quizPage" class="card hidden" aria-hidden="true">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div id="qCount" style="font-weight:700">Q1 / 20</div>
+          <div id="subjectLabel" style="color:var(--muted);font-size:13px">Subject</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;color:var(--muted)">Time left</div>
+          <div id="timeLeftLabel" style="font-weight:700">30s</div>
+        </div>
+      </div>
+
+      <div id="questionText" style="margin-top:12px;font-size:18px;font-weight:600">Loading question...</div>
+
+      <div class="options" id="optionsWrap" style="margin-top:12px"></div>
+
+      <div class="timerBar" aria-hidden="true">
+        <div id="timerFill" class="timerFill" style="width:100%"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="nextBtn" class="btn" style="flex:1" disabled>Next</button>
+        <button id="quitBtn" class="btn ghost" style="flex:0.6">Quit</button>
+      </div>
+    </section>
+
+    <!-- ========== Result Page ========== -->
+    <section id="resultPage" class="card hidden" aria-hidden="true">
+      <div class="center"><strong style="font-size:18px">Scoreboard</strong></div>
+      <div style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong id="resName">Name</strong><div style="color:var(--muted);font-size:13px" id="resClass"></div></div>
+          <div class="scoreBig" id="resScore">0</div>
+        </div>
+
+        <p style="color:var(--muted);margin-top:8px">Age: <span id="resAge">—</span> • Subject: <span id="resSubject">—</span> • Difficulty: <span id="resDiff">—</span></p>
+
+        <div style="margin-top:12px">
+          <strong>Accuracy:</strong> <span id="resAccuracy">0%</span>
+        </div>
+
+        <div style="margin-top:14px">
+          <strong>Mistakes & Correct Answers</strong>
+          <ul class="mistakesList" id="mistakesList"></ul>
+        </div>
+
+        <div style="margin-top:14px">
+          <p id="resMessage" style="font-weight:700"></p>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button id="restartBtn" class="btn">Play Again</button>
+          <button id="downloadCert" class="btn ghost">Download Result</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Quesly • Live API quiz • Made for classroom use
+  </footer>
+</div>
+
+<!-- audio assets -->
+<audio id="bgAudio" loop src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_33b73e8a5b.mp3?filename=soft-piano-ambient-11099.mp3"></audio>
+<audio id="dingAudio" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+<audio id="buzzAudio" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
+<script>
+/* ---------------------------
+  App logic: Quesly Final
+  - API: Open Trivia DB
+  - subject mapping uses category id in select values
+  - 20 questions, 30s each
+  - sounds + bg music toggle
+  - PWA install prompt handling (deferred)
+---------------------------*/
+
+const welcomePage = document.getElementById('welcomePage');
+const rulesPage = document.getElementById('rulesPage');
+const quizPage = document.getElementById('quizPage');
+const resultPage = document.getElementById('resultPage');
+
+const nameInput = document.getElementById('nameInput');
+const ageInput = document.getElementById('ageInput');
+const classInput = document.getElementById('classInput');
+const subjectInput = document.getElementById('subjectInput');
+const difficultyInput = document.getElementById('difficultyInput');
+
+const toRulesBtn = document.getElementById('toRulesBtn');
+const startNowBtn = document.getElementById('startNowBtn');
+const backToWelcome = document.getElementById('backToWelcome');
+
+const questionText = document.getElementById('questionText');
+const optionsWrap = document.getElementById('optionsWrap');
+const qCount = document.getElementById('qCount');
+const subjectLabel = document.getElementById('subjectLabel');
+const timeLeftLabel = document.getElementById('timeLeftLabel');
+const timerFill = document.getElementById('timerFill');
+const nextBtn = document.getElementById('nextBtn');
+const quitBtn = document.getElementById('quitBtn');
+
+const resName = document.getElementById('resName');
+const resClass = document.getElementById('resClass');
+const resAge = document.getElementById('resAge');
+const resSubject = document.getElementById('resSubject');
+const resDiff = document.getElementById('resDiff');
+const resScore = document.getElementById('resScore');
+const resAccuracy = document.getElementById('resAccuracy');
+const mistakesList = document.getElementById('mistakesList');
+const resMessage = document.getElementById('resMessage');
+
+const bgAudio = document.getElementById('bgAudio');
+const dingAudio = document.getElementById('dingAudio');
+const buzzAudio = document.getElementById('buzzAudio');
+const musicToggle = document.getElementById('musicToggle');
+const installBtn = document.getElementById('installBtn');
+
+let deferredPrompt = null;
+let currentIndex = 0;
+let questions = [];
+let totalQuestions = 20;
+let perQTime = 30; // 30 seconds per question
+let timer = null;
+let timeLeft = perQTime;
+let user = null;
+let score = 0;
+let mistakes = [];
+
+// PWA: capture install prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'inline-block';
+});
+installBtn.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  } else {
+    alert('Open this page in browser menu -> Add to Home screen to install.');
+  }
+});
+
+// music toggle
+let musicOn = true;
+musicToggle.addEventListener('click', () => {
+  musicOn = !musicOn;
+  if (musicOn) { bgAudio.play().catch(()=>{}); musicToggle.textContent='Mute'; }
+  else { bgAudio.pause(); musicToggle.textContent='Unmute'; }
+});
+
+// navigation: welcome -> rules
+toRulesBtn.addEventListener('click', () => {
+  const name = nameInput.value.trim();
+  const age = ageInput.value.trim();
+  const cls = classInput.value;
+  const subj = subjectInput.value;
+  const diff = difficultyInput.value;
+  if (!name || !age || !cls || !subj || !diff) {
+    alert('Please fill all fields before continuing.');
+    return;
+  }
+  user = { name, age, cls, subj, diff };
+  document.getElementById('ruleStudentName').innerText = name;
+  subjectLabel.innerText = getSubjectName(subj);
+  welcomePage.classList.add('hidden');
+  rulesPage.classList.remove('hidden');
+});
+
+// back
+backToWelcome.addEventListener('click', () => {
+  rulesPage.classList.add('hidden');
+  welcomePage.classList.remove('hidden');
+});
+
+// start quiz from rules page
+startNowBtn.addEventListener('click', async () => {
+  rulesPage.classList.add('hidden');
+  quizPage.classList.remove('hidden');
+  // ensure bg music off when quiz begins? keep soft music — you chose yes earlier
+  if (musicOn) bgAudio.play().catch(()=>{});
+  await loadQuestionsFromAPI();
+  currentIndex = 0; score = 0; mistakes = [];
+  renderQuestion();
+});
+
+// quit
+quitBtn.addEventListener('click', () => {
+  if (confirm('Are you sure you want to quit the quiz?')) {
+    location.reload();
+  }
+});
+
+// next button - allow user to move forward if they pressed Next after answering
+nextBtn.addEventListener('click', () => {
+  // if next is enabled, move to next question
+  nextBtn.disabled = true;
+  currentIndex++;
+  renderQuestion();
+});
+
+// load questions
+async function loadQuestionsFromAPI(){
+  // subjectInput contains category id per our select values
+  const cat = user.subj;
+  const diff = user.diff;
+  // Open Trivia DB supports category & difficulty & amount
+  const apiURL = `https://opentdb.com/api.php?amount=${totalQuestions}&category=${cat}&difficulty=${diff}&type=multiple`;
+  try {
+    const res = await fetch(apiURL);
+    const json = await res.json();
+    if (json.response_code !== 0 || !json.results.length) {
+      // fallback: fetch general questions if specific category empty
+      const fallback = await fetch(`https://opentdb.com/api.php?amount=${totalQuestions}&type=multiple`);
+      const fb = await fallback.json();
+      questions = parseQuestions(fb.results);
+    } else {
+      questions = parseQuestions(json.results);
+    }
+  } catch (e) {
+    alert('Failed to load questions — check internet. Loading offline demo questions.');
+    questions = getDemoQuestions(totalQuestions);
+  }
+}
+
+function parseQuestions(raw){
+  return raw.map(item => {
+    return {
+      q: decodeHTML(item.question),
+      options: shuffleArray([...item.incorrect_answers.map(decodeHTML), decodeHTML(item.correct_answer)]),
+      answer: decodeHTML(item.correct_answer)
+    };
+  });
+}
+
+function decodeHTML(str){
+  const txt = document.createElement('textarea');
+  txt.innerHTML = str;
+  return txt.value;
+}
+
+function shuffleArray(arr){ return arr.sort(()=>Math.random()-0.5); }
+
+// fallback demo questions
+function getDemoQuestions(n){
+  const bank = [
+    {q:"What is 2 + 2?", options:["3","4","5","6"], answer:"4"},
+    {q:"Which planet is called the Red Planet?", options:["Earth","Venus","Mars","Jupiter"], answer:"Mars"},
+    {q:"Water freezes at what degree (C)?", options:["0","100","32","-1"], answer:"0"},
+    {q:"Who wrote 'Hamlet'?", options:["Shakespeare","Tolkien","Dickens","Austen"], answer:"Shakespeare"},
+    {q:"Capital of India?", options:["Kolkata","Mumbai","New Delhi","Chennai"], answer:"New Delhi"}
+  ];
+  const out=[];
+  for(let i=0;i<n;i++) out.push(bank[i%bank.length]);
+  return out;
+}
+
+// render a question
+function renderQuestion(){
+  // stop previous timer
+  clearInterval(timer);
+  if(currentIndex >= totalQuestions){
+    finishQuiz();
+    return;
+  }
+  const item = questions[currentIndex];
+  if(!item){
+    // no question -> finish
+    finishQuiz();
+    return;
+  }
+  qCount.innerText = `Q${currentIndex+1} / ${totalQuestions}`;
+  subjectLabel.innerText = getSubjectName(user.subj);
+  questionText.innerText = item.q;
+  optionsWrap.innerHTML = '';
+  item.options.forEach(opt => {
+    const b = document.createElement('button');
+    b.className = 'optBtn';
+    b.innerText = opt;
+    b.onclick = () => handleAnswer(b, opt, item.answer);
+    optionsWrap.appendChild(b);
+  });
+  nextBtn.disabled = true;
+  // timer
+  timeLeft = perQTime;
+  timeLeftLabel.innerText = `${timeLeft}s`;
+  timerFill.style.width = '100%';
+  const full = perQTime;
+  timer = setInterval(()=>{
+    timeLeft--;
+    timeLeftLabel.innerText = `${timeLeft}s`;
+    const pct = Math.max(0, (timeLeft / full) * 100);
+    timerFill.style.width = pct + '%';
+    if(timeLeft <= 0){
+      clearInterval(timer);
+      // record mistake (no answer)
+      mistakes.push({question:item.q, correct:item.answer, chosen:null});
+      // auto move next
+      nextBtn.disabled = false;
+      // mark none selected and auto go next after short pause
+      setTimeout(()=>{ currentIndex++; renderQuestion(); }, 600);
+    }
+  }, 1000);
+}
+
+// handle answer selection
+function handleAnswer(buttonEl, chosen, correct){
+  // disable all buttons
+  const opts = optionsWrap.querySelectorAll('button');
+  opts.forEach(b => b.disabled = true);
+  clearInterval(timer);
+
+  if(chosen === correct){
+    buttonEl.classList.add('correct');
+    playSound('ding');
+    score += 5; // 5 points per question as requested earlier
+  } else {
+    buttonEl.classList.add('wrong');
+    // highlight correct option
+    opts.forEach(b => { if(b.innerText === correct) b.classList.add('correct'); });
+    playSound('buzz');
+    mistakes.push({question: questions[currentIndex].q, correct: correct, chosen: chosen});
+  }
+  // enable next
+  nextBtn.disabled = false;
+}
+
+// finish
+function finishQuiz(){
+  clearInterval(timer);
+  quizPage.classList.add('hidden');
+  resultPage.classList.remove('hidden');
+
+  // fill result details
+  resName.innerText = user.name;
+  resClass.innerText = `Class ${user.cls}`;
+  resAge.innerText = user.age;
+  resSubject.innerText = getSubjectName(user.subj);
+  resDiff.innerText = user.diff;
+  // score out of total possible points
+  const maxPoints = totalQuestions * 5;
+  resScore.innerText = `${score} / ${maxPoints}`;
+  const accuracy = Math.round((score / maxPoints) * 100);
+  resAccuracy.innerText = `${accuracy}%`;
+
+  // mistakes list
+  mistakesList.innerHTML = '';
+  if(mistakes.length === 0){
+    mistakesList.innerHTML = '<li>Great job — no mistakes!</li>';
+  } else {
+    mistakes.forEach(m => {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>Q:</strong> ${m.question} <br><strong>Correct:</strong> ${m.correct}` + (m.chosen ? `<br><strong>Your:</strong> ${m.chosen}` : '');
+      mistakesList.appendChild(li);
+    });
+  }
+
+  // message based on accuracy
+  let msg = '';
+  if(accuracy >= 70) msg = '🌟 Excellent — keep it up!';
+  else if(accuracy >= 50) msg = '👍 Good — keep practicing!';
+  else msg = '📚 You should study well. Try again!';
+
+  resMessage.innerText = msg;
+}
+
+// small helpers
+function getSubjectName(catId){
+  const map = {
+    '9':'General Knowledge',
+    '17':'Science',
+    '19':'Mathematics',
+    '23':'History',
+    '21':'Sports'
+  };
+  return map[catId] || 'General Knowledge';
+}
+
+function playSound(kind){
+  try{
+    if(kind==='ding'){ dingAudio.currentTime=0; dingAudio.play().catch(()=>{}); }
+    else { buzzAudio.currentTime=0; buzzAudio.play().catch(()=>{}); }
+  }catch(e){}
+}
+
+// restart
+document.getElementById('restartBtn').addEventListener('click', ()=>location.reload());
+
+// download result: create a simple text certificate (you can extend to PDF later)
+document.getElementById('downloadCert').addEventListener('click', ()=>{
+  const text = `Quesly Result\nName: ${user.name}\nClass: ${user.cls}\nAge: ${user.age}\nSubject: ${getSubjectName(user.subj)}\nScore: ${score}\nAccuracy: ${resAccuracy.innerText}\nMistakes: ${mistakes.length}\n`;
+  const blob = new Blob([text], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${user.name}_quesly_result.txt`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+
+/* =====================
+  Minimal PWA: register service worker (inline via blob)
+   - This allows "Add to Home screen" for modern browsers after user action.
+   - Note: Service worker scope may require file be served over https or file:// in some browsers.
+=====================*/
+if('serviceWorker' in navigator){
+  const swCode = `
+    self.addEventListener('install', event => {
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', event => {
+      self.clients.claim();
+    });
+    self.addEventListener('fetch', event => {
+      // network-first for API, cache-first for others - minimal safe implementation
+      event.respondWith(fetch(event.request).catch(()=>caches.match(event.request)));
+    });
+  `;
+  const blob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{ /* registration failed, it's okay */ });
+}
+
+// Create manifest dynamically so file remains single-file
+(function createManifest(){
+  const manifest = {
+    name: "Quesly",
+    short_name: "Quesly",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#ffffff",
+    description: "Quesly — live subject wise quiz app",
+    icons: [
+      {src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABkElEQVR4Xu3Yv0sDQRAG4O9hY2ViYt7EwU3sgg+gk+gq+gq6gq6iO6i4tC3Y3s7G6iM6iE7uR8OTu7s7G0zvZg5Wb3g9x5n3+f7zvuc93w0z5yQF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgF8gG8oXgG8k7gk9JdZK1F0sV6j4j8V4w5k6l40l1r4H1q4l1q4l0q4k8k2o8k9p2p0p3q4j8R4w5k6l40l1r4H1q4l1q4l0q4k8k2o8k9p2p0p3q4j8R4w5k6l40l1r4H1q4l1q4l0q4k8k2o8k9p2p0p3q4j8R4w5k6l40l1r4H1q4l1q4l0q4k8k2o8k9p2p0p3q4j8R4w5k6l40l1r4H1q4l1q4l0q4k8k2o8k9p2p0p3q4j8R4w5k6l40l1r4H1q4l1q4l0q4k8k2o8k9p2p0p3q4j8R4w5k6l4v9zJsS8GHx6wAAAAASUVORK5CYII=", sizes:"64x64", type:"image/png" }
+    ]
+  };
+  const manifestStr = JSON.stringify(manifest);
+  const blob = new Blob([manifestStr], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest'; link.href = url;
+  document.head.appendChild(link);
+})();
+
+/* Utility: ensure bg music auto-play best-effort */
+window.addEventListener('load', ()=>{ 
+  bgAudio.volume = 0.35;
+  bgAudio.play().catch(()=>{ /* autoplay blocked on mobile until user interacts */ });
+});
+
+</script>
+</body>
+</html>
